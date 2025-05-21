@@ -32,4 +32,8 @@ func Router(app *fiber.App) {
 	hotspot := base.Group("/hotspot")
 	hotspot.Post("", handlers.AddHotspot)
 	hotspot.Get("", handlers.GetHotspot)
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hotspot OLAP is running.")
+	})
 }
