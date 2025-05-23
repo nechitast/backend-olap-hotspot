@@ -1,12 +1,17 @@
 package handlers
 
 import (
-	"net/http"
 	"fmt"
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/nechitast/olap-backend/app/models"
 	"github.com/nechitast/olap-backend/app/configs/clients"
+	"github.com/nechitast/olap-backend/app/models" 
 )
+
+func ResponseJson(ctx *fiber.Ctx, statusCode int, data interface{}) error {
+	return ctx.Status(statusCode).JSON(data)
+}
 
 func AddHotspot(ctx *fiber.Ctx) error {
 	var data models.Fact_Hotspot
@@ -22,25 +27,55 @@ func AddHotspot(ctx *fiber.Ctx) error {
 	return ResponseJson(ctx, http.StatusOK, data)
 }
 
-//fungsi get hotspot
 func GetHotspot(ctx *fiber.Ctx) error {
-	var hotspot []models.Fact_Hotspot
+	var hotspotsData []struct {
+		ID            int `gorm:"column:id_hotspot"`
+		Hotspot_Count int `gorm:"column:hotspot_count"`
+		Hotspot_Time  string `gorm:"column:hotspot_time"` 
+		Desa      string `gorm:"column:desa"`
+		Kecamatan string `gorm:"column:kecamatan"`
+		Kab_kota  string `gorm:"column:kab_kota"`
+		Provinsi  string `gorm:"column:provinsi"`
+		Pulau     string `gorm:"column:pulau"`
+		Longitude float64 `gorm:"column:longitude"`
+		Latitude  float64 `gorm:"column:latitude"`
+		Confidence_Level string `gorm:"column:confidence_level"`
+		Satelite_Name string `gorm:"column:satelite_name"`
+		ID_Time string `gorm:"column:id_time"`
+	}
 
 	fmt.Println("Querying database for hotspots...")
 
-	if err := clients.DATABASE.
-		Preload("Dim_Location").
-		Preload("Dim_Time").
-		Preload("Dim_Confidence").
-		Preload("Dim_Satelite").
-		Find(&hotspot).Error; err != nil {
-		fmt.Println("Database error:", err)
+	err := clients.DATABASE.Raw(`
+		SELECT
+			fh.id_hotspot,
+			fh.hotspot_count,
+			fh.hotspot_time::text, -- Pastikan format sesuai
+			dl.desa,
+			dl.kecamatan,
+			dl.kab_kota,
+			dl.provinsi,
+			dl.pulau,
+			ST_X(dl.geom_desa) AS longitude, -- Ekstrak Longitude
+			ST_Y(dl.geom_desa) AS latitude,  -- Ekstrak Latitude
+			dc.confidence_level,
+			ds.satelite_name,
+			dt.id_time::text -- Pastikan format sesuai
+		FROM fact_hotspot fh
+		JOIN dim_location dl ON fh.id_location = dl.id_location
+		JOIN dim_confidence dc ON fh.id_confidence = dc.id_confidence
+		JOIN dim_satelite ds ON fh.id_satelite = ds.id_satelite
+		JOIN dim_time dt ON fh.id_time = dt.id_time
+	`).Scan(&hotspotsData).Error
+
+	if err != nil {
+		fmt.Println("Database error in GetHotspot:", err)
 		return ResponseJson(ctx, http.StatusInternalServerError, err.Error())
 	}
 
-	fmt.Println("Hotspots retrieved:", len(hotspot))
-	if len(hotspot) == 0 {
-		fmt.Println("No data found in fact_hotspot!")
+	fmt.Println("Hotspots retrieved:", len(hotspotsData))
+	if len(hotspotsData) == 0 {
+		fmt.Println("No data found in fact_hotspot for this query!")
 	}
 
 	// Format ke GeoJSON
@@ -49,34 +84,28 @@ func GetHotspot(ctx *fiber.Ctx) error {
 		"features": []fiber.Map{},
 	}
 
-	for _, h := range hotspot {
-		longitude, latitude, err := h.Dim_Location.ExtractLatLng()
-		if err != nil {
-			fmt.Printf("Error extracting lat/lng: %v\n", err)
-			continue
-		}
-
-		fmt.Printf("Hotspot ID: %d, Location: (%f, %f)\n", h.ID_Location, longitude, latitude)
+	for _, h := range hotspotsData { 
+		fmt.Printf("Hotspot ID: %d, Location: (%f, %f)\n", h.ID, h.Longitude, h.Latitude)
 
 		geoJSON["features"] = append(geoJSON["features"].([]fiber.Map), fiber.Map{
 			"type": "Feature",
 			"properties": fiber.Map{
-				"confidence":    h.Dim_Confidence.Confidence_Level,
-				"satellite":     h.Dim_Satelite.Satelite_Name,
-				"time":          h.Dim_Time.Id_time,
+				"confidence":    h.Confidence_Level,
+				"satellite":     h.Satelite_Name,
+				"time":          h.ID_Time,
 				"hotspot_count": h.Hotspot_Count,
-				"location": fiber.Map {
-					"pulau": h.Dim_Location.Pulau,
-					"provinsi": h.Dim_Location.Provinsi,
-					"kab_kota": h.Dim_Location.Kab_kota,
-					"kecamatan": h.Dim_Location.Kecamatan,
-					"desa": h.Dim_Location.Desa,
-					"geom_desa": h.Dim_Location.GeomDesa,
+				"hotspot_time_of_day": h.Hotspot_Time,
+				"location": fiber.Map{
+					"pulau":     h.Pulau,
+					"provinsi":  h.Provinsi,
+					"kab_kota":  h.Kab_kota,
+					"kecamatan": h.Kecamatan,
+					"desa":      h.Desa,
 				},
 			},
 			"geometry": fiber.Map{
 				"type":        "Point",
-				"coordinates": []float64{latitude, longitude},
+				"coordinates": []float64{h.Longitude, h.Latitude}, 
 			},
 		})
 	}
@@ -107,7 +136,7 @@ func AddTime(ctx *fiber.Ctx) error {
 
 	if err := data.Add(); err != nil {
 		return ResponseJson(ctx, http.StatusInternalServerError, err.Error())
-	}
+	S}
 
 	return ResponseJson(ctx, http.StatusOK, data)
 }
@@ -141,31 +170,47 @@ func AddSatelite(ctx *fiber.Ctx) error {
 }
 
 func QueryLocation(ctx *fiber.Ctx) error {
-	var locations []models.Dim_Location
+	var locations []struct {
+		Id_location int    `gorm:"column:id_location"`
+		Pulau       string `gorm:"column:pulau"`
+		Provinsi    string `gorm:"column:provinsi"`
+		Kab_kota    string `gorm:"column:kab_kota"`
+		Kecamatan   string `gorm:"column:kecamatan"`
+		Desa        string `gorm:"column:desa"`
+		Longitude   float64 `gorm:"column:longitude"` 
+		Latitude    float64 `gorm:"column:latitude"` 
+	}
+	err := clients.DATABASE.Raw(`
+		SELECT
+			id_location,
+			pulau,
+			provinsi,
+			kab_kota,
+			kecamatan,
+			desa,
+			ST_X(geom_desa) as longitude,
+			ST_Y(geom_desa) as latitude
+		FROM dim_location
+	`).Scan(&locations).Error 
 
-	// Ambil data dari database
-	if err := clients.DATABASE.Find(&locations).Error; err != nil {
+	if err != nil {
+		fmt.Printf("Database error in QueryLocation: %v\n", err)
 		return ResponseJson(ctx, http.StatusInternalServerError, err.Error())
 	}
 
-	// Format data untuk frontend
+	fmt.Printf("Successfully fetched %d locations from DB in QueryLocation.\n", len(locations))
+
 	formattedLocations := make([]map[string]interface{}, 0)
 	for _, loc := range locations {
-		lat, lng, err := loc.ExtractLatLng() 
-		if err != nil {
-			fmt.Printf("Error extracting lat/lng for location %d: %v\n", loc.Id_location, err)
-			continue
-		}
-
 		formattedLocations = append(formattedLocations, map[string]interface{}{
-			"pulau":       loc.Pulau,
-			"provinsi":    loc.Provinsi,
-			"kab_kota":	   loc.Kab_kota,
-			"kecamatan":   loc.Kecamatan,
-			"desa":		   loc.Desa,
-			"lat":         lat,
-			"lng":         lng,
-
+			"id": loc.Id_location,
+			"pulau":     loc.Pulau,
+			"provinsi":  loc.Provinsi,
+			"kab_kota":  loc.Kab_kota,
+			"kecamatan": loc.Kecamatan,
+			"desa":      loc.Desa,
+			"lat":       loc.Latitude,
+			"lng":       loc.Longitude,
 		})
 	}
 
