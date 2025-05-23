@@ -4,6 +4,8 @@ import (
 	"github.com/nechitast/olap-backend/app/configs/clients"
 	"fmt"
 	"errors"
+	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/encoding/wkb"
 )
 
 type Dim_Location struct {
