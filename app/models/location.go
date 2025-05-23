@@ -40,14 +40,14 @@ func (data Dim_Location) Add() error {
 
 func GetAllLocations() ([]map[string]interface{}, error) {
 	var locations []struct {
-		Id_location int    `gorm:"column:id_location"`
-		Pulau       string `gorm:"column:pulau"`
-		Provinsi    string `gorm:"column:provinsi"`
-		Kab_kota    string `gorm:"column:kab_kota"`
-		Kecamatan   string `gorm:"column:kecamatan"`
-		Desa        string `gorm:"column:desa"`
-		Longitude   float64 `gorm:"column:longitude"` 
-		Latitude    float64 `gorm:"column:latitude"`
+		Id_location int `gorm:"column:id_location"`
+		Pulau string `gorm:"column:pulau"`
+		Provinsi string `gorm:"column:provinsi"`
+		Kab_kota string `gorm:"column:kab_kota"`
+		Kecamatan string `gorm:"column:kecamatan"`
+		Desa string `gorm:"column:desa"`
+		Longitude float64 `gorm:"column:longitude"` 
+		Latitude float64 `gorm:"column:latitude"`
 	}
 
 	err := clients.DATABASE.Raw(`
@@ -64,24 +64,24 @@ func GetAllLocations() ([]map[string]interface{}, error) {
 	`).Scan(&locations).Error 
 
 	if err != nil {
-		fmt.Printf("Database error fetching locations from DB: %v\n", err) // Log error database
+		fmt.Printf("Database error fetching locations from DB: %v\n", err) 
 		return nil, err
 	}
 
-	fmt.Printf("Successfully fetched %d locations from DB.\n", len(locations)) // Log jumlah data yang berhasil diambil
+	fmt.Printf("Successfully fetched %d locations from DB.\n", len(locations)) 
 
 	var result []map[string]interface{}
 	for _, loc := range locations {
 
 		result = append(result, map[string]interface{}{
-			"id":        loc.Id_location,
-			"pulau":     loc.Pulau,
-			"provinsi":  loc.Provinsi,
-			"kab_kota":  loc.Kab_kota,
+			"id": loc.Id_location,
+			"pulau": loc.Pulau,
+			"provinsi": loc.Provinsi,
+			"kab_kota": loc.Kab_kota,
 			"kecamatan": loc.Kecamatan,
-			"desa":      loc.Desa,
+			"desa": loc.Desa,
 			"longitude": loc.Longitude, 
-			"latitude":  loc.Latitude,
+			"latitude": loc.Latitude,
 		})
 	}
 
