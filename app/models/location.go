@@ -4,8 +4,6 @@ import (
 	"github.com/nechitast/olap-backend/app/configs/clients"
 	"fmt"
 	"errors"
-	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/encoding/wkb"
 )
 
 type Dim_Location struct {
@@ -41,29 +39,49 @@ func (data Dim_Location) Add() error {
 }
 
 func GetAllLocations() ([]map[string]interface{}, error) {
-	var locations []Dim_Location
-	err := clients.DATABASE.Select("id_location, pulau, provinsi, kab_kota, kecamatan, desa, ST_AsBinary(geom_desa) as geom_desa").Find(&locations).Error
+	var locations []struct {
+		Id_location int    `gorm:"column:id_location"`
+		Pulau       string `gorm:"column:pulau"`
+		Provinsi    string `gorm:"column:provinsi"`
+		Kab_kota    string `gorm:"column:kab_kota"`
+		Kecamatan   string `gorm:"column:kecamatan"`
+		Desa        string `gorm:"column:desa"`
+		Longitude   float64 `gorm:"column:longitude"` 
+		Latitude    float64 `gorm:"column:latitude"`
+	}
+
+	err := clients.DATABASE.Raw(`
+		SELECT 
+			id_location, 
+			pulau, 
+			provinsi, 
+			kab_kota, 
+			kecamatan, 
+			desa, 
+			ST_X(geom_desa) as longitude, 
+			ST_Y(geom_desa) as latitude 
+		FROM dim_location
+	`).Scan(&locations).Error 
+
 	if err != nil {
+		fmt.Printf("Database error fetching locations from DB: %v\n", err) // Log error database
 		return nil, err
 	}
 
+	fmt.Printf("Successfully fetched %d locations from DB.\n", len(locations)) // Log jumlah data yang berhasil diambil
+
 	var result []map[string]interface{}
 	for _, loc := range locations {
-		lng, lat, err := loc.ExtractLatLng()
-		if err != nil {
-			fmt.Printf("Error extracting lat/lng: %v\n", err)
-			continue
-		}
 
 		result = append(result, map[string]interface{}{
-			"id":        loc.Id_location,
-			"pulau":     loc.Pulau,
-			"provinsi":  loc.Provinsi,
-			"kab_kota":  loc.Kab_kota,
+			"id":        loc.Id_location,
+			"pulau":     loc.Pulau,
+			"provinsi":  loc.Provinsi,
+			"kab_kota":  loc.Kab_kota,
 			"kecamatan": loc.Kecamatan,
-			"desa":      loc.Desa,
-			"longitude": lng,
-			"latitude":  lat,
+			"desa":      loc.Desa,
+			"longitude": loc.Longitude, 
+			"latitude":  loc.Latitude,
 		})
 	}
 
