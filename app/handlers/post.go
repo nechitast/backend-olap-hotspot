@@ -9,10 +9,6 @@ import (
 	"github.com/nechitast/olap-backend/app/models" 
 )
 
-func ResponseJson(ctx *fiber.Ctx, statusCode int, data interface{}) error {
-	return ctx.Status(statusCode).JSON(data)
-}
-
 func AddHotspot(ctx *fiber.Ctx) error {
 	var data models.Fact_Hotspot
 
@@ -136,7 +132,7 @@ func AddTime(ctx *fiber.Ctx) error {
 
 	if err := data.Add(); err != nil {
 		return ResponseJson(ctx, http.StatusInternalServerError, err.Error())
-	S}
+	}
 
 	return ResponseJson(ctx, http.StatusOK, data)
 }
