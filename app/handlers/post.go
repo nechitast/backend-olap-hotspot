@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/nechitast/olap-backend/app/configs/clients"
-	"github.com/nechitast/olap-backend/app/models" 
+	"github.com/nechitast/olap-backend/app/models"
 )
 
 func AddHotspot(ctx *fiber.Ctx) error {
@@ -25,38 +25,36 @@ func AddHotspot(ctx *fiber.Ctx) error {
 
 func GetHotspot(ctx *fiber.Ctx) error {
 	var hotspotsData []struct {
-		ID            int `gorm:"column:id_hotspot"`
-		Hotspot_Count int `gorm:"column:hotspot_count"`
-		Hotspot_Time  string `gorm:"column:hotspot_time"` 
-		Desa      string `gorm:"column:desa"`
-		Kecamatan string `gorm:"column:kecamatan"`
-		Kab_kota  string `gorm:"column:kab_kota"`
-		Provinsi  string `gorm:"column:provinsi"`
-		Pulau     string `gorm:"column:pulau"`
-		Longitude float64 `gorm:"column:longitude"`
-		Latitude  float64 `gorm:"column:latitude"`
-		Confidence_Level string `gorm:"column:confidence_level"`
-		Satelite_Name string `gorm:"column:satelite_name"`
-		ID_Time string `gorm:"column:id_time"`
+		Hotspot_Count int     `gorm:"column:hotspot_count"`
+		Hotspot_Time  string  `gorm:"column:hotspot_time"`
+		Desa          string  `gorm:"column:desa"`
+		Kecamatan     string  `gorm:"column:kecamatan"`
+		Kab_kota      string  `gorm:"column:kab_kota"`
+		Provinsi      string  `gorm:"column:provinsi"`
+		Pulau         string  `gorm:"column:pulau"`
+		Longitude     float64 `gorm:"column:longitude"`
+		Latitude      float64 `gorm:"column:latitude"`
+		Confidence    string  `gorm:"column:confidence_level"`
+		Satelite      string  `gorm:"column:satelite_name"`
+		Time          string  `gorm:"column:id_time"`
 	}
 
 	fmt.Println("Querying database for hotspots...")
 
 	err := clients.DATABASE.Raw(`
 		SELECT
-			fh.id_hotspot,
 			fh.hotspot_count,
-			fh.hotspot_time::text, -- Pastikan format sesuai
+			fh.hotspot_time::text,
 			dl.desa,
 			dl.kecamatan,
 			dl.kab_kota,
 			dl.provinsi,
 			dl.pulau,
-			ST_X(dl.geom_desa) AS longitude, -- Ekstrak Longitude
-			ST_Y(dl.geom_desa) AS latitude,  -- Ekstrak Latitude
+			ST_X(dl.geom_desa) AS longitude,
+			ST_Y(dl.geom_desa) AS latitude,
 			dc.confidence_level,
 			ds.satelite_name,
-			dt.id_time::text -- Pastikan format sesuai
+			dt.id_time::text
 		FROM fact_hotspot fh
 		JOIN dim_location dl ON fh.id_location = dl.id_location
 		JOIN dim_confidence dc ON fh.id_confidence = dc.id_confidence
@@ -80,17 +78,15 @@ func GetHotspot(ctx *fiber.Ctx) error {
 		"features": []fiber.Map{},
 	}
 
-	for _, h := range hotspotsData { 
-		fmt.Printf("Hotspot ID: %d, Location: (%f, %f)\n", h.ID, h.Longitude, h.Latitude)
-
+	for _, h := range hotspotsData {
 		geoJSON["features"] = append(geoJSON["features"].([]fiber.Map), fiber.Map{
 			"type": "Feature",
 			"properties": fiber.Map{
-				"confidence":    h.Confidence_Level,
-				"satellite":     h.Satelite_Name,
-				"time":          h.ID_Time,
+				"confidence":    h.Confidence,
+				"satellite":     h.Satelite,
+				"time":          h.Time,
 				"hotspot_count": h.Hotspot_Count,
-				"hotspot_time_of_day": h.Hotspot_Time,
+				"hotspot_time":  h.Hotspot_Time,
 				"location": fiber.Map{
 					"pulau":     h.Pulau,
 					"provinsi":  h.Provinsi,
@@ -101,7 +97,7 @@ func GetHotspot(ctx *fiber.Ctx) error {
 			},
 			"geometry": fiber.Map{
 				"type":        "Point",
-				"coordinates": []float64{h.Longitude, h.Latitude}, 
+				"coordinates": []float64{h.Longitude, h.Latitude},
 			},
 		})
 	}
