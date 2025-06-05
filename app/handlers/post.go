@@ -37,6 +37,7 @@ func GetHotspot(ctx *fiber.Ctx) error {
 		Confidence    string  `gorm:"column:confidence_level"`
 		Satelite      string  `gorm:"column:satelite_name"`
 		Time          string  `gorm:"column:id_time"`
+		Minggu        string  `gorm:"column:minggu"`
 	}
 
 	fmt.Println("Querying database for hotspots...")
@@ -54,7 +55,8 @@ func GetHotspot(ctx *fiber.Ctx) error {
 			ST_Y(dl.geom_desa) AS latitude,
 			dc.confidence_level,
 			ds.satelite_name,
-			dt.id_time::text
+			dt.id_time::text,
+			dt.minggu::text
 		FROM fact_hotspot fh
 		JOIN dim_location dl ON fh.id_location = dl.id_location
 		JOIN dim_confidence dc ON fh.id_confidence = dc.id_confidence
@@ -85,6 +87,7 @@ func GetHotspot(ctx *fiber.Ctx) error {
 				"confidence":    h.Confidence,
 				"satellite":     h.Satelite,
 				"time":          h.Time,
+				"minggu":		 h.Minggu,
 				"hotspot_count": h.Hotspot_Count,
 				"hotspot_time":  h.Hotspot_Time,
 				"location": fiber.Map{
