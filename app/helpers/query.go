@@ -151,6 +151,10 @@ func CubeTime(param payload.Time, oth payload.Other) (olap.Cube, error) {
 		where["Dim_Time.hari"] = param.Hari
 	}
 
+	if param.Minggu != "" {
+		where["Dim_Time.minggu"] = param.Minggu
+	}
+
 	if param.Bulan != "" {
 		where["Dim_Time.bulan"] = param.Bulan
 	}
@@ -177,8 +181,10 @@ func CubeTime(param payload.Time, oth payload.Other) (olap.Cube, error) {
 	for i := 0; i < int(count); i++ {
 		var value string
 		item := list[i]
-		if param.Bulan != "" {
+		if param.Minggu != "" {
 			value = item.Dim_Time.Hari
+		} else if param.Bulan != "" {
+			value = (string)(item.Dim_Time.Minggu)
 		} else if param.Kuartal != "" {
 			value = item.Dim_Time.Bulan
 		} else if param.Semester != "" {
@@ -223,6 +229,10 @@ func CubeTimeLocation(param payload.Time, loc payload.Location, oth payload.Othe
 
 	if param.Hari != "" {
 		where["Dim_Time.hari"] = param.Hari
+	}
+
+	if param.Minggu != "" {
+		where["Dim_Time.minggu"] = param.Minggu
 	}
 
 	if param.Bulan != "" {
@@ -270,8 +280,10 @@ func CubeTimeLocation(param payload.Time, loc payload.Location, oth payload.Othe
 
 		item := list[i]
 
-		if param.Bulan != "" {
+		if param.Minggu != "" {
 			time = item.Dim_Time.Hari
+		} else if param.Bulan != "" {
+			time = (string)(item.Dim_Time.Minggu)
 		} else if param.Kuartal != "" {
 			time = item.Dim_Time.Bulan
 		} else if param.Semester != "" {

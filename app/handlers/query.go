@@ -104,6 +104,9 @@ func handleTimeQuery(ctx *fiber.Ctx) error {
     if timeParam.Bulan != "" {
         query = query.Where("bulan = ?", timeParam.Bulan)
     }
+	if timeParam.Minggu != "" {
+        query = query.Where("minggu = ?", timeParam.Minggu)
+    }
     if timeParam.Hari != "" {
         query = query.Where("hari = ?", timeParam.Hari)
     }
@@ -116,8 +119,11 @@ func handleTimeQuery(ctx *fiber.Ctx) error {
 }
 
 func determineTimeField(param payload.Time) string {
-    if param.Hari == "" && param.Bulan != "" {
+    if param.Hari == "" && param.Minggu != "" {
         return "hari"
+    }
+	if param.Minggu == "" && param.Bulan != "" {
+        return "minggu"
     }
     if param.Bulan == "" && param.Kuartal != "" {
         return "bulan"

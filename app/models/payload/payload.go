@@ -12,6 +12,7 @@ type Time struct {
 	Semester string
 	Kuartal  string
 	Bulan    string
+	Minggu	 string
 	Hari     string
 }
 

@@ -19,6 +19,7 @@ func GetPayload(ctx *fiber.Ctx) (payload.Location, payload.Time, payload.Other) 
 	time.Semester = ctx.Query("semester", "")
 	time.Kuartal = ctx.Query("kuartal", "")
 	time.Bulan = ctx.Query("bulan", "")
+	time.Minggu = ctx.Query("minggu", "")
 	time.Hari = ctx.Query("hari", "")
 
 	other.Confidence = ctx.Query("confidence", "")
