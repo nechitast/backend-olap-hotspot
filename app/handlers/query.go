@@ -8,7 +8,6 @@ import (
 	"github.com/nechitast/olap-backend/app/models/payload"
 	"github.com/xdbsoft/olap"
 	"fmt"
-	
 )
 
 func GetHeader(ctx *fiber.Ctx) error {
@@ -93,7 +92,6 @@ func Query(ctx *fiber.Ctx) error {
 }
 
 func handleLocationQueryWithDate(ctx *fiber.Ctx, selectedDate string) error {
-    // Get other filter parameters
     confidence := ctx.Query("confidence")
     satelite := ctx.Query("satelite")
     pulau := ctx.Query("pulau")
@@ -111,7 +109,7 @@ func handleLocationQueryWithDate(ctx *fiber.Ctx, selectedDate string) error {
         Total    int    `gorm:"column:total"`
     }
 
-    // Tentukan level agregasi berdasarkan parameter drill-down
+    // Menentukan level agregasi berdasarkan parameter drill-down
     var groupByColumn string = "dl.pulau" // Default ke pulau
     
     if desa != "" {
@@ -141,7 +139,7 @@ func handleLocationQueryWithDate(ctx *fiber.Ctx, selectedDate string) error {
     var args []interface{}
     argIndex := 1
 
-    // Apply date filter - INI YANG PENTING!
+    // Apply date filter
     if selectedDate != "" {
         query += ` AND DATE(fh.hotspot_time) = $` + fmt.Sprintf("%d", argIndex)
         args = append(args, selectedDate)
