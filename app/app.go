@@ -15,8 +15,10 @@ func RunApp() {
 	godotenv.Load()
 	app := fiber.New()
 
+	// CORS configuration fixed for production
+	// Only allow frontend origin to prevent CORS errors
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
+		AllowOrigins: "https://app.olaphotspot.web.id",
 		AllowHeaders: "*",
 		AllowMethods: "*",
 	}))
