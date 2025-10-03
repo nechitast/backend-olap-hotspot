@@ -16,7 +16,7 @@ func RunApp() {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "https://app.olaphotspot.web.id",
+		AllowOrigins: "*",
 		AllowHeaders: "*",
 		AllowMethods: "*",
 	}))
