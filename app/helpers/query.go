@@ -8,7 +8,7 @@ import (
 	"github.com/xdbsoft/olap"
 )
 
-func SQLtoCube(oth payload.Other) (olap.Cube, error) {
+func SQLtoCube(oth payload.Other, limit int, offset int) (olap.Cube, error) {
 	var count int64
 	var list []models.Fact_Hotspot
 	var data [][]interface{}
