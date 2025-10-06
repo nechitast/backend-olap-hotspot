@@ -8,7 +8,7 @@ import (
 	"github.com/xdbsoft/olap"
 )
 
-func SQLtoCube(oth payload.Other, limit int, offset int) (olap.Cube, error) {
+func SQLtoCube(oth payload.Other) (olap.Cube, error) {
 	var count int64
 	var list []models.Fact_Hotspot
 	var data [][]interface{}
@@ -33,7 +33,7 @@ func SQLtoCube(oth payload.Other, limit int, offset int) (olap.Cube, error) {
 	if err := clients.DATABASE.Table("fact_hotspot").
 		Preload("Dim_Location").Joins("Dim_Confidence").
 		Preload("Dim_Time").Joins("Dim_Satelite").Where(where).
-		Limit(limit).Offset(offset).Find(&list).Count(&count).Error; err != nil {
+		Find(&list).Count(&count).Error; err != nil {
 		return cube, err
 	}
 
@@ -54,7 +54,7 @@ func SQLtoCube(oth payload.Other, limit int, offset int) (olap.Cube, error) {
 	return cube, nil
 }
 
-func CubeLocation(param payload.Location, oth payload.Other, limit int, offset int) (olap.Cube, error) {
+func CubeLocation(param payload.Location, oth payload.Other) (olap.Cube, error) {
 	var count int64
 	var list []models.Fact_Hotspot
 	var data [][]interface{}
@@ -95,7 +95,7 @@ func CubeLocation(param payload.Location, oth payload.Other, limit int, offset i
 	if err := clients.DATABASE.Table("fact_hotspot").
 		Joins("Dim_Location").Joins("Dim_Confidence").
 		Preload("Dim_Time").Joins("Dim_Satelite").Where(where).
-		Limit(limit).Offset(offset).Find(&list).Count(&count).Error; err != nil {
+		Find(&list).Count(&count).Error; err != nil {
 		return cube, err
 	}
 
@@ -127,7 +127,7 @@ func CubeLocation(param payload.Location, oth payload.Other, limit int, offset i
 	return cube, nil
 }
 
-func CubeTime(param payload.Time, oth payload.Other, limit int, offset int) (olap.Cube, error) {
+func CubeTime(param payload.Time, oth payload.Other) (olap.Cube, error) {
 	var count int64
 	var list []models.Fact_Hotspot
 	var data [][]interface{}
@@ -174,7 +174,7 @@ func CubeTime(param payload.Time, oth payload.Other, limit int, offset int) (ola
 	if err := clients.DATABASE.Table("fact_hotspot").
 		Preload("Dim_Location").Joins("Dim_Confidence").
 		Joins("Dim_Time").Joins("Dim_Satelite").Where(where).
-		Limit(limit).Offset(offset).Find(&list).Count(&count).Error; err != nil {
+		Find(&list).Count(&count).Error; err != nil {
 		return cube, err
 	}
 
@@ -206,7 +206,7 @@ func CubeTime(param payload.Time, oth payload.Other, limit int, offset int) (ola
 	return cube, nil
 }
 
-func CubeTimeLocation(param payload.Time, loc payload.Location, oth payload.Other, limit int, offset int) (olap.Cube, error) {
+func CubeTimeLocation(param payload.Time, loc payload.Location, oth payload.Other) (olap.Cube, error) {
 	var count int64
 	var list []models.Fact_Hotspot
 	var data [][]interface{}
@@ -270,7 +270,7 @@ func CubeTimeLocation(param payload.Time, loc payload.Location, oth payload.Othe
 	if err := clients.DATABASE.Table("fact_hotspot").
 		Joins("Dim_Location").Joins("Dim_Confidence").
 		Joins("Dim_Time").Joins("Dim_Satelite").Where(where).Where(whereLoc).
-		Limit(limit).Offset(offset).Find(&list).Count(&count).Error; err != nil {
+		Find(&list).Count(&count).Error; err != nil {
 		return cube, err
 	}
 

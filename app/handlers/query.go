@@ -50,20 +50,20 @@ func Query(ctx *fiber.Ctx) error {
 	if dimension == "location" || dimension == "time" {
 		if location.Pulau != "" || time.Tahun != "" {
 			if location.Pulau != "" && time.Tahun == "" {
-				cube, err = helpers.CubeLocation(location, other, limit, offset)
+				cube, err = helpers.CubeLocation(location, other)
 				if err != nil {
 					return ResponseJson(ctx, http.StatusBadGateway, err.Error())
 				}
 			}
 			if location.Pulau == "" && time.Tahun != "" {
-				cube, err = helpers.CubeTime(time, other, limit, offset)
+				cube, err = helpers.CubeTime(time, other)
 				if err != nil {
 					return ResponseJson(ctx, http.StatusBadGateway, err.Error())
 				}
 			}
 
 			if location.Pulau != "" && time.Tahun != "" {
-				cube, err = helpers.CubeTimeLocation(time, location, other, limit, offset)
+				cube, err = helpers.CubeTimeLocation(time, location, other)
 				if err != nil {
 					return ResponseJson(ctx, http.StatusBadGateway, err.Error())
 				}
