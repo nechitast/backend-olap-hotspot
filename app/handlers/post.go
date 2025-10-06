@@ -61,6 +61,9 @@ func GetHotspot(ctx *fiber.Ctx) error {
 
     fmt.Printf("Querying hotspots with selectedDate: %s\n", selectedDate)
 
+    limit := ctx.QueryInt("limit", 1000)
+    offset := ctx.QueryInt("offset", 0)
+    
     // Build dynamic query with WHERE conditions
     query := `
         SELECT
@@ -174,6 +177,7 @@ func GetHotspot(ctx *fiber.Ctx) error {
     fmt.Printf("Final query: %s\n", query)
     fmt.Printf("Query args: %v\n", args)
 
+    query += fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
     err := clients.DATABASE.Raw(query, args...).Scan(&hotspotsData).Error
 
     if err != nil {

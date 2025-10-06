@@ -174,7 +174,7 @@ func CubeTime(param payload.Time, oth payload.Other) (olap.Cube, error) {
 	if err := clients.DATABASE.Table("fact_hotspot").
 		Preload("Dim_Location").Joins("Dim_Confidence").
 		Joins("Dim_Time").Joins("Dim_Satelite").Where(where).
-		Find(&list).Count(&count).Error; err != nil {
+		Limit(limit).Offset(offset).Find(&list).Count(&count).Error; err != nil {
 		return cube, err
 	}
 
