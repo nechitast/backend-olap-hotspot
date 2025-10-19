@@ -16,11 +16,11 @@ func RunApp() {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "https://app.olaphotspot.web.id, http://localhost:3000",
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
-		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+		AllowOrigins:     "https://app.olaphotspot.web.id,http://localhost:3000",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
 		AllowCredentials: true,
-		ExposeHeaders: "Content-Length, Content-Type",
+		ExposeHeaders:    "Content-Length, Content-Type",
 	}))
 	configs.ConnectDB()
 	routers.Router(app)
