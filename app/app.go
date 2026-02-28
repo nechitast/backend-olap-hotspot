@@ -16,15 +16,22 @@ func RunApp() {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOriginsFunc: func(origin string) bool {
-			return origin == "https://app.olaphotspot.web.id" ||
-				origin == "http://localhost:3000"
-		},
+		// AllowOrigins:     "https://app.olaphotspot.web.id,http://localhost:3000",
+		AllowOrigins:     "*",
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
-		AllowCredentials: true,
+		AllowCredentials: false,
 	}))
+
 	configs.ConnectDB()
 	routers.Router(app)
-	log.Fatalln(app.Listen(os.Getenv("SERVER")))
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Println("Server running on port:", port)
+	log.Fatal(app.Listen("0.0.0.0:" + port))
+	// log.Fatalln(app.Listen(os.Getenv("SERVER")))
 }
